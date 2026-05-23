@@ -162,17 +162,41 @@ database_payload=$(cat <<EOF
 EOF
 )
 
-database_response=$(api_post "/api/database" "$database_payload")
-database_code=$(printf '%s' "$database_response" | sed -n '1p')
-database_body=$(printf '%s' "$database_response" | sed -n '2,$p')
+register_database() {
+  attempt=1
+  max_attempts=10
 
-if [ "$database_code" = "200" ] || [ "$database_code" = "201" ]; then
-  log "Registered PostgreSQL database $METABASE_DATABASE_NAME in Metabase."
-else
-  log "Failed to register database (HTTP $database_code)"
-  if [ -n "$database_body" ]; then
-    log "Database create response body: $database_body"
-  fi
-fi
+  while [ "$attempt" -le "$max_attempts" ]; do
+    database_response=$(api_post "/api/database" "$database_payload")
+    database_code=$(printf '%s' "$database_response" | sed -n '1p')
+    database_body=$(printf '%s' "$database_response" | sed -n '2,$p')
+
+    if [ "$database_code" = "200" ] || [ "$database_code" = "201" ]; then
+      log "Registered PostgreSQL database $METABASE_DATABASE_NAME in Metabase."
+      return 0
+    fi
+
+    if printf '%s' "$database_body" | grep -qi "couldn't connect to the database\|check your host settings\|check your port settings"; then
+      log "Database registration attempt $attempt failed with a transient connection error (HTTP $database_code); retrying..."
+      if [ -n "$database_body" ]; then
+        log "Database create response body: $database_body"
+      fi
+      attempt=$((attempt + 1))
+      sleep 3
+      continue
+    fi
+
+    log "Failed to register database (HTTP $database_code)"
+    if [ -n "$database_body" ]; then
+      log "Database create response body: $database_body"
+    fi
+    return 1
+  done
+
+  log "Failed to register database after $max_attempts attempts"
+  return 1
+}
+
+register_database
 
 exit 0

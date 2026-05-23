@@ -11,15 +11,23 @@
 
 ## Ejecución
 
-1. Copiar el archivo de entorno:
+1. Copiar el archivo de entorno y el archivo docker-compose:
 
-	`cp .env.example .env`
+	```
+    cp .env.example .env
+    cp docker-compose.yml.example docker-compose.yml
+    ```
 
 2. Levantar los servicios:
 
 	`docker compose up`
 
+3. Verificar el estado:
+
+
 3. Abrir Metabase en `http://localhost:3000`.
+
+El servicio `metabase-init` se ejecuta automáticamente durante `docker compose up` cuando Postgres y Metabase ya están listos.
 
 
 ## Docker Compose
@@ -27,7 +35,7 @@
 - Levanta `postgres` y `metabase`.
 - Carga automáticamente `sql/DDL.sql` y `sql/DATA.sql` en PostgreSQL al inicializar el contenedor.
 - Persiste la base interna de Metabase en `metabase-data/`.
-- Crea el usuario administrador inicial de Metabase y registra automáticamente la base PostgreSQL en Metabase.
+- Crea el usuario administrador inicial de Metabase y registra automáticamente la base PostgreSQL en Metabase durante `docker compose up`.
 
 ## Credenciales por defecto de Metabase
 

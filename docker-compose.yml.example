@@ -1,0 +1,69 @@
+version: "2.4"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: LAB7_PSQL
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - ./sql/DDL.sql:/docker-entrypoint-initdb.d/001-DDL.sql:ro
+      - ./sql/DATA.sql:/docker-entrypoint-initdb.d/002-DATA.sql:ro
+      - ./data:/tmp/data
+    networks:
+      - LAB7_NET
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  metabase:
+    image: metabase/metabase:v0.49.0
+    platform: linux/amd64
+    container_name: LAB7_METABASE
+    ports:
+      - "${METABASE_PORT}:3000"
+    depends_on:
+      - postgres
+    environment:
+      MB_DB_TYPE: h2
+      MB_DB_FILE: /metabase-data/metabase.db
+      JAVA_TIMEZONE: ${JAVA_TIMEZONE}
+    volumes:
+      - ./metabase-data:/metabase-data
+    networks:
+      - LAB7_NET
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:3000/api/session/properties >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  metabase-init:
+    image: curlimages/curl:latest
+    container_name: LAB7_METABASE_INIT
+    depends_on:
+      postgres:
+        condition: service_healthy
+      metabase:
+        condition: service_healthy
+    volumes:
+      - ./scripts/metabase-init.sh:/metabase-init.sh:ro
+      - ./scripts/wait-and-init.sh:/wait-and-init.sh:ro
+    environment:
+      METABASE_ADMIN_EMAIL: ${METABASE_ADMIN_EMAIL}
+      METABASE_ADMIN_PASSWORD: ${METABASE_ADMIN_PASSWORD}
+    entrypoint: ["/bin/sh", "/wait-and-init.sh"]
+    networks:
+      - LAB7_NET
+
+networks:
+  LAB7_NET:
+    driver: bridge

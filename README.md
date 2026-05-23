@@ -21,11 +21,6 @@
 
 3. Abrir Metabase en `http://localhost:3000`.
 
-Si prefieres correrlo en segundo plano, usa `docker compose up -d` y mira los logs del init con:
-
-```bash
-docker compose logs -f metabase-init
-```
 
 ## Docker Compose
 

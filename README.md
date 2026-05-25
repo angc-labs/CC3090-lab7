@@ -34,6 +34,9 @@ docker compose logs -f
 
 El servicio `metabase-init` se ejecuta automáticamente durante `docker compose up` cuando Postgres y Metabase ya están listos.
 
+<img width="800" height="500" alt="running" src="https://github.com/user-attachments/assets/6b082338-b743-4872-b2ab-9505ed8c6853" />
+
+https://github.com/user-attachments/assets/dbfa8223-f02e-4b2d-b88a-3f8be0a1b046
 
 ## Docker Compose
 

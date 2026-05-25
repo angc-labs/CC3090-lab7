@@ -13,19 +13,24 @@
 
 1. Copiar el archivo de entorno y el archivo docker-compose:
 
-	```
-    cp .env.example .env
-    cp docker-compose.yml.example docker-compose.yml
-    ```
+```bash
+cp .env.example .env
+cp docker-compose.yml.example docker-compose.yml
+```
 
 2. Levantar los servicios:
 
-	`docker compose up`
+```bash 
+docker compose up --build -d
+```
 
 3. Verificar el estado:
 
+```bash
+docker compose logs -f
+```
 
-3. Abrir Metabase en `http://localhost:3000`.
+4. Abrir Metabase en `http://localhost:3000`.
 
 El servicio `metabase-init` se ejecuta automáticamente durante `docker compose up` cuando Postgres y Metabase ya están listos.
 
